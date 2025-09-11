@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =========================
+// Enums
+// =========================
+enum TipoPessoa {
+  FISICA
+  JURIDICA
+}
+
+enum EstadoCivil {
+  SOLTEIRO
+  CASADO
+  DIVORCIADO
+  VIUVO
+}
+
+enum Sexo {
+  MASCULINO
+  FEMININO
+  OUTRO
+}
+
+enum TipoCondomino {
+  PROPRIETARIO
+  LOCATARIO
+  RESIDENTE
+  NENHUM
+}
+
+enum TipoContato {
+  TELEFONE
+  CELULAR
+  EMAIL
+  OUTRO
+}
+
+enum TipoDocumento {
+  CPF
+  CNPJ
+  RG
+  CNH
+  OUTRO
+}
+
+enum TipoEndereco {
+  RESIDENCIAL
+  COMERCIAL
+  COBRANCA
+  OUTRO
+}
+
+// =========================
+// Models
+// =========================
+model User {
+  userId        Int           @id @default(autoincrement())
+  nomeCompleto  String
+  dataNascimento DateTime
+  tipoPessoa    TipoPessoa
+  estadoCivil   EstadoCivil
+  sexo          Sexo
+  condomino     Boolean       @default(false)
+  fornecedor    Boolean       @default(false)
+  sindico       Boolean       @default(false)
+  funcionario   Boolean       @default(false)
+  tipoCondomino TipoCondomino
+  foto          String?
+  isActive      Boolean       @default(true)
+  isFirstLogin  Boolean       @default(true)
+  email         String        @unique
+
+  // relations
+  contatos      Contato[]
+  documentos    Documento[]
+  enderecos     Endereco[]
+  login         UserLogin?
+}
+
+model UserLogin {
+  id          Int     @id @default(autoincrement())
+  email       String  @unique
+  displayName String
+  firstLogin  Boolean @default(true)
+  token       String
+
+  // relation
+  user        User    @relation(fields: [userId], references: [userId])
+  userId      Int     @unique
+}
+
+model Contato {
+  id          Int        @id @default(autoincrement())
+  tipo        TipoContato
+  contato     String
+  responsavel String
+
+  user        User       @relation(fields: [userId], references: [userId])
+  userId      Int
+}
+
+model Documento {
+  id          Int          @id @default(autoincrement())
+  tipo        TipoDocumento
+  documento   String
+  validade    DateTime
+
+  user        User         @relation(fields: [userId], references: [userId])
+  userId      Int
+}
+
+model Endereco {
+  id          Int          @id @default(autoincrement())
+  tipo        TipoEndereco
+  logradouro  String
+  cep         String?
+  numero      String
+  complemento String
+  bairro      String
+  cidade      String
+  estado      String
+  pais        String
+
+  user        User         @relation(fields: [userId], references: [userId])
+  userId      Int
+}
